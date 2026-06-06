@@ -1,0 +1,51 @@
+"use client";
+
+import { useRef, KeyboardEvent } from "react";
+
+interface ChatInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  isLoading: boolean;
+}
+
+export function ChatInput({ value, onChange, onSubmit, isLoading }: ChatInputProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!isLoading && value.trim()) onSubmit();
+    }
+  }
+
+  return (
+    <div className="flex gap-2 items-end p-4 border-t border-gray-200 bg-white">
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        disabled={isLoading}
+        placeholder="ถามเกี่ยวกับนโยบายหรือผลงานของชัชชาติ..."
+        rows={1}
+        className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+        style={{ maxHeight: "120px", overflowY: "auto" }}
+      />
+      <button
+        onClick={onSubmit}
+        disabled={isLoading || !value.trim()}
+        className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
+      >
+        {isLoading ? (
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            กำลังตอบ
+          </span>
+        ) : (
+          "ส่ง"
+        )}
+      </button>
+    </div>
+  );
+}
