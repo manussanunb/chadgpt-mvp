@@ -39,7 +39,7 @@ export function ChatWindow({ messages, isLoading, onStarterClick }: ChatWindowPr
       {messages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full gap-6 text-center">
           <div>
-            <h2 className="text-xl font-semibold text-gray-700 mb-1">ถามชัชชาติได้เลย</h2>
+            <h2 className="text-xl font-semibold text-[#000000] mb-1">ถามชัชชาติได้เลย</h2>
             <p className="text-sm text-gray-400">
               ข้อมูลนโยบายและผลงานของชัชชาติ สิทธิพันธุ์
             </p>
@@ -49,7 +49,7 @@ export function ChatWindow({ messages, isLoading, onStarterClick }: ChatWindowPr
               <button
                 key={q}
                 onClick={() => onStarterClick(q)}
-                className="text-left px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors"
+                className="text-left px-4 py-3 rounded-xl border border-[#013920]/30 text-sm text-gray-600 hover:bg-[#86f101]/20 hover:border-[#86f101] hover:text-[#013920] transition-colors"
               >
                 {q}
               </button>
@@ -64,11 +64,11 @@ export function ChatWindow({ messages, isLoading, onStarterClick }: ChatWindowPr
 
       {isLoading && (
         <div className="flex justify-start mb-3">
-          <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+          <div className="bg-white border border-[#013920]/20 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
             <span className="flex gap-1 items-center">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <span className="w-1.5 h-1.5 bg-[#013920] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-1.5 h-1.5 bg-[#013920] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-1.5 h-1.5 bg-[#013920] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
             </span>
           </div>
         </div>

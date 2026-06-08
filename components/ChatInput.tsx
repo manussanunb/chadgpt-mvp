@@ -20,7 +20,7 @@ export function ChatInput({ value, onChange, onSubmit, isLoading }: ChatInputPro
   }
 
   return (
-    <div className="flex gap-2 items-end p-4 border-t border-gray-200 bg-white">
+    <div className="flex gap-2 items-end p-4 border-t border-[#013920] bg-white">
       <textarea
         ref={textareaRef}
         value={value}
@@ -29,13 +29,13 @@ export function ChatInput({ value, onChange, onSubmit, isLoading }: ChatInputPro
         disabled={isLoading}
         placeholder="ถามเกี่ยวกับนโยบายหรือผลงานของชัชชาติ..."
         rows={1}
-        className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+        className="flex-1 resize-none rounded-xl border border-[#013920]/30 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#86f101] focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
         style={{ maxHeight: "120px", overflowY: "auto" }}
       />
       <button
         onClick={onSubmit}
         disabled={isLoading || !value.trim()}
-        className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
+        className="flex-shrink-0 bg-[#013920] hover:bg-[#013920]/80 disabled:bg-[#013920]/25 text-white rounded-xl px-4 py-2.5 text-sm font-medium transition-colors"
       >
         {isLoading ? (
           <span className="flex items-center gap-1.5">
