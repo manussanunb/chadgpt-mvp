@@ -22,8 +22,8 @@ export function MessageBubble({ message }: { message: Message }) {
         <div
           className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
             isUser
-              ? "bg-blue-600 text-white rounded-br-sm whitespace-pre-wrap"
-              : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm shadow-sm prose prose-sm max-w-none"
+              ? "bg-[#013920] text-white rounded-br-sm whitespace-pre-wrap"
+              : "bg-white border-l-[3px] border-l-[#013920] border border-[#013920]/10 text-gray-800 rounded-bl-sm shadow-sm prose prose-sm max-w-none"
           }`}
         >
           {isUser ? (
@@ -37,7 +37,7 @@ export function MessageBubble({ message }: { message: Message }) {
                 li: ({ children }) => <li>{children}</li>,
                 strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
                 a: ({ href, children }) => (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#013920] underline">
                     {children}
                   </a>
                 ),
@@ -56,7 +56,7 @@ export function MessageBubble({ message }: { message: Message }) {
                 href={s.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-blue-500 hover:text-blue-700 hover:underline bg-blue-50 px-2 py-0.5 rounded-full"
+                className="text-xs text-[#013920] hover:underline bg-[#86f101]/20 border border-[#86f101]/60 px-2 py-0.5 rounded-full"
               >
                 {s.category}
               </a>

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ChatWindow } from "@/components/ChatWindow";
 import { ChatInput } from "@/components/ChatInput";
 import type { ChatResponse } from "@/engine/types";
+import logoSrc from "../public/teamchadchart_logo.png";
+import avatarSrc from "../public/chadgpt_profile_picture.jpeg";
 
 interface Message {
   role: "user" | "assistant";
@@ -55,14 +58,12 @@ export default function Home() {
   }
 
   return (
-    <main className="flex flex-col h-screen bg-gray-50 max-w-2xl mx-auto">
-      <header className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
-          ช
-        </div>
+    <main className="flex flex-col h-screen bg-[#ffffff] max-w-2xl mx-auto md:border-x md:border-[#013920]">
+      <header className="flex items-center gap-3 px-4 py-3 bg-[#013920] border-b border-[#013920]">
+        <Image src={avatarSrc} alt="ChadGPT" className="w-8 h-8 rounded-full object-cover" />
         <div>
-          <h1 className="font-semibold text-gray-800 text-sm">ChadGPT</h1>
-          <p className="text-xs text-gray-400">นโยบายและผลงานของชัชชาติ</p>
+          <Image src={logoSrc} alt="ChadGPT" className="h-5 w-auto rounded" />
+          <p className="text-xs text-white/60">นโยบายและผลงานของชัชชาติ</p>
         </div>
       </header>
 
