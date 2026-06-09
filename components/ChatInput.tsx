@@ -27,7 +27,7 @@ export function ChatInput({ value, onChange, onSubmit, isLoading }: ChatInputPro
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         disabled={isLoading}
-        placeholder="ถามเกี่ยวกับนโยบายหรือผลงานของชัชชาติ..."
+        placeholder="ถามเกี่ยวกับนโยบายหรือผลงานของทีมชัชชาติ..."
         rows={1}
         className="flex-1 resize-none rounded-xl border border-[#013920]/30 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#86f101] focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
         style={{ maxHeight: "120px", overflowY: "auto" }}

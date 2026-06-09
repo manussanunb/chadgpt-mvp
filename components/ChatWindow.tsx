@@ -15,7 +15,7 @@ interface Message {
 }
 
 const STARTER_QUESTIONS = [
-  "ชัชชาติทำอะไรด้านสุขภาพไปแล้วบ้าง?",
+  "4 ปีที่ผ่านมากทม.ทำอะไรด้านสุขภาพไปแล้วบ้าง?",
   "นโยบายด้านการศึกษามีอะไรบ้าง?",
   "แก้ปัญหารถติดยังไง?",
   "นโยบายด้านสิ่งแวดล้อมมีอะไรบ้าง?",
@@ -39,9 +39,9 @@ export function ChatWindow({ messages, isLoading, onStarterClick }: ChatWindowPr
       {messages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full gap-6 text-center">
           <div>
-            <h2 className="text-xl font-semibold text-[#000000] mb-1">ถามชัชชาติได้เลย</h2>
+            <h2 className="text-xl font-semibold text-[#000000] mb-1">ถาม ChadGPT ได้เลย</h2>
             <p className="text-sm text-gray-400">
-              ข้อมูลนโยบายและผลงานของชัชชาติ สิทธิพันธุ์
+              ข้อมูลนโยบายและผลงานของกรุงเทพมหานครฯ 4 ปีที่ผ่านมา
             </p>
           </div>
           <div className="flex flex-col gap-2 w-full max-w-sm">

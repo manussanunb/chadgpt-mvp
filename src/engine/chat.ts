@@ -41,11 +41,14 @@ export async function chat(
   const context = results
     .map((r) => {
       const type = r.item.source_file.startsWith("policy_") ? "นโยบายเทอมหน้า" : "ผลงานที่ผ่านมา";
-      return `[${r.item.category} — ${type}]\n${r.item.text}`;
+      return `[${r.item.category} — ${type} | url: ${r.item.source_url}]\n${r.item.text}`;
     })
     .join("\n\n---\n\n");
 
-  const userMessage = `Relevant context:\n${context}\n\nQuestion: ${message}`;
+  const linkingInstruction =
+    "For each context block you reference in your answer, embed exactly one markdown link [natural phrase](url) using that block's url. The link text must be a short Thai phrase (2–5 words) taken from your own sentence — never use the category name, type label, or any text from the block header. Place the link where it reads most naturally.";
+
+  const userMessage = `Relevant context:\n${context}\n\n${linkingInstruction}\n\nQuestion: ${message}`;
   const answer = await provider.generate(SYSTEM_PROMPT, userMessage);
 
   const seen = new Set<string>();
