@@ -59,12 +59,13 @@ export default function Home() {
 
   return (
     <main className="flex flex-col h-screen bg-[#ffffff] max-w-2xl mx-auto md:border-x md:border-[#013920]">
-      <header className="flex items-center gap-3 px-4 py-3 bg-[#013920] border-b border-[#013920]">
-        <Image src={avatarSrc} alt="ChadGPT" className="w-8 h-8 rounded-full object-cover" />
-        <div>
-          <Image src={logoSrc} alt="ChadGPT" className="h-5 w-auto rounded" />
-          <p className="text-xs text-white/60">นโยบายและผลงานของทีมชัชชาติ</p>
+      <header className="flex items-center gap-3 px-4 py-3 bg-[#013920]">
+        <Image src={avatarSrc} alt="ChadGPT" className="w-9 h-9 rounded-full object-cover ring-2 ring-[#86f101]/40" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white leading-tight">ChadGPT</p>
+          <p className="text-xs text-white/50 leading-tight truncate">นโยบายและผลงานของทีมชัชชาติ</p>
         </div>
+        <Image src={logoSrc} alt="TeamChadchart" className="h-6 w-auto opacity-70 flex-shrink-0" />
       </header>
 
       <ChatWindow
