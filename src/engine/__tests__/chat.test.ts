@@ -12,23 +12,22 @@ function makeItem(embedding: number[], category: string, source_url: string): Po
   };
 }
 
-const mockProvider: LLMProvider = {
-  generate: vi.fn().mockResolvedValue("คำตอบทดสอบ"),
-};
-
 const db: PolicyItem[] = [
   makeItem([1, 0, 0], "สุขภาพ", "https://example.com/1"),
   makeItem([0, 1, 0], "การขนส่ง", "https://example.com/2"),
 ];
 
 describe("chat orchestrator", () => {
-  it("returns fallback when no results match", async () => {
+  it("calls provider with free-form prompt when no results match", async () => {
+    const generateMock = vi.fn().mockResolvedValue("คำตอบทดสอบ");
+    const provider: LLMProvider = { generate: generateMock };
     const embedFn = vi.fn().mockResolvedValue([0, 0, 0]);
-    const result = await chat("คำถามที่ไม่เกี่ยวข้อง", db, mockProvider, embedFn);
 
-    expect(result.answer).toContain("ไม่พบข้อมูล");
+    const result = await chat("คำถามที่ไม่เกี่ยวข้อง", db, provider, embedFn);
+
+    expect(generateMock).toHaveBeenCalledOnce();
+    expect(result.answer).toBe("คำตอบทดสอบ");
     expect(result.sources).toHaveLength(0);
-    expect(mockProvider.generate).not.toHaveBeenCalled();
   });
 
   it("calls provider when results are found", async () => {
@@ -65,5 +64,38 @@ describe("chat orchestrator", () => {
 
     const urls = result.sources.map((s) => s.source_url);
     expect(new Set(urls).size).toBe(urls.length);
+  });
+
+  it("includes source_url in context block header passed to provider", async () => {
+    const generateMock = vi.fn().mockResolvedValue("ตอบ");
+    const provider: LLMProvider = { generate: generateMock };
+    const embedFn = vi.fn().mockResolvedValue([1, 0, 0]);
+
+    await chat("สุขภาพ", db, provider, embedFn);
+
+    const userMessage: string = generateMock.mock.calls[0][1];
+    expect(userMessage).toContain("url: https://example.com/1");
+  });
+
+  it("appends linking instruction to userMessage when results are found", async () => {
+    const generateMock = vi.fn().mockResolvedValue("ตอบ");
+    const provider: LLMProvider = { generate: generateMock };
+    const embedFn = vi.fn().mockResolvedValue([1, 0, 0]);
+
+    await chat("สุขภาพ", db, provider, embedFn);
+
+    const userMessage: string = generateMock.mock.calls[0][1];
+    expect(userMessage).toContain("markdown link");
+  });
+
+  it("does not include linking instruction when no results match", async () => {
+    const generateMock = vi.fn().mockResolvedValue("ตอบ");
+    const provider: LLMProvider = { generate: generateMock };
+    const embedFn = vi.fn().mockResolvedValue([0, 0, 0]);
+
+    await chat("ไม่เกี่ยวข้อง", db, provider, embedFn);
+
+    const userMessage: string = generateMock.mock.calls[0][1];
+    expect(userMessage).not.toContain("markdown link");
   });
 });

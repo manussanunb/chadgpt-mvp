@@ -63,7 +63,7 @@ export default function Home() {
         <Image src={avatarSrc} alt="ChadGPT" className="w-8 h-8 rounded-full object-cover" />
         <div>
           <Image src={logoSrc} alt="ChadGPT" className="h-5 w-auto rounded" />
-          <p className="text-xs text-white/60">นโยบายและผลงานของชัชชาติ</p>
+          <p className="text-xs text-white/60">นโยบายและผลงานของทีมชัชชาติ</p>
         </div>
       </header>
 

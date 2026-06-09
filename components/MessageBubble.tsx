@@ -37,7 +37,7 @@ export function MessageBubble({ message }: { message: Message }) {
                 li: ({ children }) => <li>{children}</li>,
                 strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
                 a: ({ href, children }) => (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#013920] underline">
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#013920] underline decoration-dotted underline-offset-2">
                     {children}
                   </a>
                 ),
@@ -49,18 +49,21 @@ export function MessageBubble({ message }: { message: Message }) {
         </div>
 
         {!isUser && message.sources && message.sources.length > 0 && (
-          <div className="flex flex-wrap gap-1 px-1">
-            {message.sources.map((s, i) => (
-              <a
-                key={i}
-                href={s.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-[#013920] hover:underline bg-[#86f101]/20 border border-[#86f101]/60 px-2 py-0.5 rounded-full"
-              >
-                {s.category}
-              </a>
-            ))}
+          <div className="flex flex-col gap-1 px-1">
+            <p className="text-xs text-gray-400">อ่านนโยบายเพิ่มเติมที่</p>
+            <div className="flex flex-wrap gap-1">
+              {message.sources.map((s, i) => (
+                <a
+                  key={i}
+                  href={s.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-[#013920] hover:underline bg-[#86f101]/20 border border-[#86f101]/60 px-2 py-0.5 rounded-full"
+                >
+                  {s.category} ↗
+                </a>
+              ))}
+            </div>
           </div>
         )}
       </div>
