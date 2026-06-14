@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleChat } from "@/adapters/vercel";
+import { getPostHogClient } from "@/lib/posthog-server";
 import type { ChatRequest } from "@/engine/types";
 
 export const maxDuration = 30;
@@ -25,11 +26,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const posthog = getPostHogClient();
+  const distinctId = req.headers.get("x-posthog-distinct-id") ?? "anonymous";
+
+  posthog.capture({
+    distinctId,
+    event: "chat_api_called",
+    properties: { message_length: message.trim().length },
+  });
+
   try {
     const response = await handleChat({ message: message.trim() });
     return NextResponse.json(response);
   } catch (err) {
     console.error("[chat] Error:", err);
+    posthog.capture({
+      distinctId,
+      event: "chat_api_error",
+      properties: { error: err instanceof Error ? err.message : String(err) },
+    });
     return NextResponse.json(
       { error: "ขออภัยครับ เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" },
       { status: 500 }

@@ -1,5 +1,6 @@
 "use client";
 
+import posthog from "posthog-js";
 import ReactMarkdown from "react-markdown";
 
 interface Source {
@@ -58,6 +59,12 @@ export function MessageBubble({ message }: { message: Message }) {
                   href={s.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() =>
+                    posthog.capture("source_link_clicked", {
+                      category: s.category,
+                      source_url: s.source_url,
+                    })
+                  }
                   className="text-xs text-[#013920] hover:underline bg-[#86f101]/20 border border-[#86f101]/60 px-2 py-0.5 rounded-full"
                 >
                   {s.category} ↗

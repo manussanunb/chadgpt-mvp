@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import posthog from "posthog-js";
 import { ChatWindow } from "@/components/ChatWindow";
 import { ChatInput } from "@/components/ChatInput";
 import type { ChatResponse } from "@/engine/types";
@@ -19,9 +20,14 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  async function sendMessage(text: string) {
+  async function sendMessage(text: string, isStarterQuestion = false) {
     const trimmed = text.trim();
     if (!trimmed || isLoading) return;
+
+    posthog.capture("message_sent", {
+      message_length: trimmed.length,
+      is_starter_question: isStarterQuestion,
+    });
 
     setMessages((prev) => [...prev, { role: "user", content: trimmed }]);
     setInput("");
@@ -40,16 +46,22 @@ export default function Home() {
       }
 
       const data: ChatResponse = await res.json();
+      posthog.capture("chat_response_received", {
+        has_sources: data.sources.length > 0,
+        source_count: data.sources.length,
+      });
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: data.answer, sources: data.sources },
       ]);
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่";
+      posthog.capture("chat_error", { error_message: errorMessage });
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่",
+          content: errorMessage,
         },
       ]);
     } finally {
@@ -71,7 +83,7 @@ export default function Home() {
       <ChatWindow
         messages={messages}
         isLoading={isLoading}
-        onStarterClick={sendMessage}
+        onStarterClick={(q) => sendMessage(q, true)}
       />
 
       <ChatInput

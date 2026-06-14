@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import posthog from "posthog-js";
 import { MessageBubble } from "./MessageBubble";
 
 interface Source {
@@ -49,7 +50,10 @@ export function ChatWindow({ messages, isLoading, onStarterClick }: ChatWindowPr
             {STARTER_QUESTIONS.map((q) => (
               <button
                 key={q}
-                onClick={() => onStarterClick(q)}
+                onClick={() => {
+                  posthog.capture("starter_question_clicked", { question: q });
+                  onStarterClick(q);
+                }}
                 className="text-left px-4 py-3 rounded-xl border border-[#013920]/30 text-sm text-gray-600 hover:bg-[#86f101]/20 hover:border-[#86f101] hover:text-[#013920] transition-colors"
               >
                 {q}
