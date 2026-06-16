@@ -9,8 +9,19 @@ const RATE_LIMIT = 5;
 const WINDOW_MS = 60_000;
 const ipTimestamps = new Map<string, number[]>();
 
+let lastCleanup = Date.now();
+
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
+
+  // Purge stale entries every 5 minutes to prevent unbounded memory growth
+  if (now - lastCleanup > 5 * 60_000) {
+    for (const [key, ts] of ipTimestamps) {
+      if (ts.every((t) => now - t >= WINDOW_MS)) ipTimestamps.delete(key);
+    }
+    lastCleanup = now;
+  }
+
   const timestamps = (ipTimestamps.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
   if (timestamps.length >= RATE_LIMIT) return true;
   timestamps.push(now);
@@ -75,7 +86,8 @@ export async function POST(req: NextRequest) {
   }
 
   const posthog = getPostHogClient();
-  const distinctId = req.headers.get("x-posthog-distinct-id") ?? "anonymous";
+  const rawDistinctId = req.headers.get("x-posthog-distinct-id") ?? "anonymous";
+  const distinctId = rawDistinctId.slice(0, 64).replace(/[^\w-]/g, "_");
   const start = Date.now();
 
   try {

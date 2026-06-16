@@ -45,11 +45,14 @@ export function MessageBubble({ message }: { message: Message }) {
                 ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
                 li: ({ children }) => <li>{children}</li>,
                 strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                a: ({ href, children }) => (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-[#013920] underline decoration-dotted underline-offset-2">
-                    {children}
-                  </a>
-                ),
+                a: ({ href, children }) => {
+                  const safe = href && /^https?:\/\//i.test(href) ? href : undefined;
+                  return (
+                    <a href={safe} target="_blank" rel="noopener noreferrer" className="text-[#013920] underline decoration-dotted underline-offset-2">
+                      {children}
+                    </a>
+                  );
+                },
               }}
             >
               {message.content}
