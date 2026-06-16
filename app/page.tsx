@@ -16,7 +16,8 @@ interface Message {
   sources?: { category: string; source_url: string }[];
 }
 
-const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const SITE_KEY =
+  process.env.NODE_ENV === "development" ? undefined : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);

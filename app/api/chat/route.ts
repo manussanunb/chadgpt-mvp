@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
   }
 
   const turnstileToken = req.headers.get("x-turnstile-token");
-  if (process.env.TURNSTILE_SECRET_KEY) {
+  if (process.env.TURNSTILE_SECRET_KEY && process.env.NODE_ENV !== "development") {
     if (!turnstileToken || !(await verifyTurnstile(turnstileToken, ip))) {
       return NextResponse.json({ error: "การยืนยันตัวตนล้มเหลว กรุณาลองใหม่" }, { status: 403 });
     }
@@ -76,22 +76,30 @@ export async function POST(req: NextRequest) {
 
   const posthog = getPostHogClient();
   const distinctId = req.headers.get("x-posthog-distinct-id") ?? "anonymous";
-
-  posthog.capture({
-    distinctId,
-    event: "chat_api_called",
-    properties: { message_length: message.trim().length },
-  });
+  const start = Date.now();
 
   try {
-    const response = await handleChat({ message: message.trim() });
+    const response = await handleChat({ message: message.trim(), distinctId });
+    posthog.capture({
+      distinctId,
+      event: "chat_completed",
+      properties: {
+        message_length: message.trim().length,
+        had_rag_context: response.sources.length > 0,
+        source_count: response.sources.length,
+        response_time_ms: Date.now() - start,
+      },
+    });
     return NextResponse.json(response);
   } catch (err) {
     console.error("[chat] Error:", err);
     posthog.capture({
       distinctId,
       event: "chat_api_error",
-      properties: { error: err instanceof Error ? err.message : String(err) },
+      properties: {
+        error: err instanceof Error ? err.message : String(err),
+        response_time_ms: Date.now() - start,
+      },
     });
     return NextResponse.json(
       { error: "ขออภัยครับ เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" },
