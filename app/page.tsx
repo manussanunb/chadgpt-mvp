@@ -26,9 +26,11 @@ export default function Home() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
 
+  const turnstileReady = !SITE_KEY || !!turnstileToken;
+
   async function sendMessage(text: string, isStarterQuestion = false) {
     const trimmed = text.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading || !turnstileReady) return;
 
     posthog.capture("message_sent", {
       message_length: trimmed.length,
@@ -102,7 +104,7 @@ export default function Home() {
         value={input}
         onChange={setInput}
         onSubmit={() => sendMessage(input)}
-        isLoading={isLoading}
+        isLoading={isLoading || !turnstileReady}
       />
 
       {SITE_KEY && (
