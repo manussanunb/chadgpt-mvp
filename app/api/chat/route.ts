@@ -5,6 +5,39 @@ import type { ChatRequest } from "@/engine/types";
 
 export const maxDuration = 30;
 
+const RATE_LIMIT = 5;
+const WINDOW_MS = 60_000;
+const ipTimestamps = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = (ipTimestamps.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+  if (timestamps.length >= RATE_LIMIT) return true;
+  timestamps.push(now);
+  ipTimestamps.set(ip, timestamps);
+  return false;
+}
+
+function getClientIp(req: NextRequest): string {
+  return (
+    req.headers.get("cf-connecting-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    "unknown"
+  );
+}
+
+async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) return true; // Turnstile not configured — skip in dev
+  const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ secret, response: token, remoteip: ip }),
+  });
+  const data = (await res.json()) as { success: boolean };
+  return data.success;
+}
+
 export async function POST(req: NextRequest) {
   let body: unknown;
   try {
@@ -24,6 +57,21 @@ export async function POST(req: NextRequest) {
       { error: "message must be 500 characters or fewer" },
       { status: 400 }
     );
+  }
+
+  const ip = getClientIp(req);
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "ส่งข้อความบ่อยเกินไปครับ กรุณารอสักครู่แล้วลองใหม่" },
+      { status: 429 }
+    );
+  }
+
+  const turnstileToken = req.headers.get("x-turnstile-token");
+  if (process.env.TURNSTILE_SECRET_KEY) {
+    if (!turnstileToken || !(await verifyTurnstile(turnstileToken, ip))) {
+      return NextResponse.json({ error: "การยืนยันตัวตนล้มเหลว กรุณาลองใหม่" }, { status: 403 });
+    }
   }
 
   const posthog = getPostHogClient();

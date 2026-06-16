@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import posthog from "posthog-js";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { ChatWindow } from "@/components/ChatWindow";
 import { ChatInput } from "@/components/ChatInput";
 import type { ChatResponse } from "@/engine/types";
@@ -15,10 +16,14 @@ interface Message {
   sources?: { category: string; source_url: string }[];
 }
 
+const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   async function sendMessage(text: string, isStarterQuestion = false) {
     const trimmed = text.trim();
@@ -34,11 +39,17 @@ export default function Home() {
     setIsLoading(true);
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (turnstileToken) headers["x-turnstile-token"] = turnstileToken;
+
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ message: trimmed }),
       });
+
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -92,6 +103,16 @@ export default function Home() {
         onSubmit={() => sendMessage(input)}
         isLoading={isLoading}
       />
+
+      {SITE_KEY && (
+        <Turnstile
+          ref={turnstileRef}
+          siteKey={SITE_KEY}
+          options={{ appearance: "interaction-only", execution: "render" }}
+          onSuccess={setTurnstileToken}
+          style={{ display: "none" }}
+        />
+      )}
     </main>
   );
 }
