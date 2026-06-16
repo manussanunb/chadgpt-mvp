@@ -1,3 +1,4 @@
+import type { PostHog } from "posthog-node";
 import type { LLMProvider } from "@/engine/types";
 import { GeminiProvider } from "./gemini";
 import { ClaudeProvider } from "./claude";
@@ -8,6 +9,7 @@ export interface ProviderConfig {
   GEMINI_API_KEY?: string;
   CLAUDE_API_KEY?: string;
   OPENAI_API_KEY?: string;
+  posthog?: PostHog;
 }
 
 export function createProvider(config: ProviderConfig): LLMProvider {
@@ -22,7 +24,7 @@ export function createProvider(config: ProviderConfig): LLMProvider {
     }
     default: {
       if (!config.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is required when LLM_PROVIDER=gemini");
-      return new GeminiProvider(config.GEMINI_API_KEY);
+      return new GeminiProvider(config.GEMINI_API_KEY, config.posthog);
     }
   }
 }

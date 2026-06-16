@@ -3,6 +3,7 @@ import { loadDatabase } from "@/data/loader";
 import { createProvider } from "@/engine/providers/index";
 import { embedText } from "@/engine/providers/gemini";
 import { chat } from "@/engine/chat";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 let _provider: ReturnType<typeof createProvider> | null = null;
 
@@ -13,6 +14,7 @@ function getProvider() {
       GEMINI_API_KEY: process.env.GEMINI_API_KEY,
       CLAUDE_API_KEY: process.env.CLAUDE_API_KEY,
       OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+      posthog: getPostHogClient(),
     });
   }
   return _provider;
