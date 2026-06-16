@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import posthog from "posthog-js";
 import ReactMarkdown from "react-markdown";
 
@@ -16,6 +17,13 @@ interface Message {
 
 export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === "user";
+  const [rating, setRating] = useState<"good" | "bad" | "funny" | null>(null);
+
+  function handleRating(value: "good" | "bad" | "funny") {
+    if (rating) return;
+    setRating(value);
+    posthog.capture("answer_rated", { rating: value });
+  }
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-3`}>
@@ -48,6 +56,35 @@ export function MessageBubble({ message }: { message: Message }) {
             </ReactMarkdown>
           )}
         </div>
+
+        {!isUser && (
+          <div className="flex gap-2 px-1">
+            <button
+              onClick={() => handleRating("good")}
+              disabled={!!rating}
+              className={`text-base transition-opacity ${rating === "good" ? "opacity-100" : rating ? "opacity-20" : "opacity-40 hover:opacity-80"}`}
+              aria-label="ตอบดี"
+            >
+              👍
+            </button>
+            <button
+              onClick={() => handleRating("bad")}
+              disabled={!!rating}
+              className={`text-base transition-opacity ${rating === "bad" ? "opacity-100" : rating ? "opacity-20" : "opacity-40 hover:opacity-80"}`}
+              aria-label="ตอบไม่ดี"
+            >
+              👎
+            </button>
+            <button
+              onClick={() => handleRating("funny")}
+              disabled={!!rating}
+              className={`text-base transition-opacity ${rating === "funny" ? "opacity-100" : rating ? "opacity-20" : "opacity-40 hover:opacity-80"}`}
+              aria-label="ฮามาก"
+            >
+              😂
+            </button>
+          </div>
+        )}
 
         {!isUser && message.sources && message.sources.length > 0 && (
           <div className="flex flex-col gap-1 px-1">

@@ -8,7 +8,7 @@ export class OpenAIProvider implements LLMProvider {
     this.client = new OpenAI({ apiKey });
   }
 
-  async generate(systemPrompt: string, userMessage: string): Promise<string> {
+  async generate(systemPrompt: string, userMessage: string, _distinctId?: string): Promise<string> {
     const completion = await this.client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [

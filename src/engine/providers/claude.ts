@@ -8,7 +8,7 @@ export class ClaudeProvider implements LLMProvider {
     this.client = new Anthropic({ apiKey });
   }
 
-  async generate(systemPrompt: string, userMessage: string): Promise<string> {
+  async generate(systemPrompt: string, userMessage: string, _distinctId?: string): Promise<string> {
     const message = await this.client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 1024,

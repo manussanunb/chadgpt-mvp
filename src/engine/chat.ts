@@ -31,13 +31,14 @@ export async function chat(
   message: string,
   db: PolicyItem[],
   provider: LLMProvider,
-  embedFn: (text: string) => Promise<number[]>
+  embedFn: (text: string) => Promise<number[]>,
+  distinctId?: string
 ): Promise<ChatResponse> {
   const queryVector = await embedFn(message);
   const results = semanticSearch(queryVector, db);
 
   if (results.length === 0) {
-    const answer = await provider.generate(SYSTEM_PROMPT, `Question: ${message}`);
+    const answer = await provider.generate(SYSTEM_PROMPT, `Question: ${message}`, distinctId);
     return { answer, sources: [] };
   }
 
@@ -52,7 +53,7 @@ export async function chat(
     "For each context block you reference in your answer, embed exactly one markdown link [natural phrase](url) using that block's url. The link text must be a short Thai phrase (2–5 words) taken from your own sentence — never use the category name, type label, or any text from the block header. Place the link where it reads most naturally.";
 
   const userMessage = `Relevant context:\n${context}\n\n${linkingInstruction}\n\nQuestion: ${message}`;
-  const answer = await provider.generate(SYSTEM_PROMPT, userMessage);
+  const answer = await provider.generate(SYSTEM_PROMPT, userMessage, distinctId);
 
   const seen = new Set<string>();
   const sources = results

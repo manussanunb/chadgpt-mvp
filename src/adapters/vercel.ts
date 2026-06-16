@@ -30,5 +30,5 @@ export async function handleChat(req: ChatRequest): Promise<ChatResponse> {
   const db = loadDatabase();
   const provider = getProvider();
   const embedFn = getEmbedFn();
-  return chat(req.message, db, provider, embedFn);
+  return chat(req.message, db, provider, embedFn, req.distinctId);
 }

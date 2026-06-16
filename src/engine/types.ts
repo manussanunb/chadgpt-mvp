@@ -13,11 +13,12 @@ export interface SearchResult {
 }
 
 export interface LLMProvider {
-  generate(systemPrompt: string, userMessage: string): Promise<string>;
+  generate(systemPrompt: string, userMessage: string, distinctId?: string): Promise<string>;
 }
 
 export interface ChatRequest {
   message: string;
+  distinctId?: string;
 }
 
 export interface ChatResponse {
