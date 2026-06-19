@@ -21,6 +21,7 @@ export class GeminiProvider implements LLMProvider {
     const params = {
       model: "gemini-2.5-flash",
       contents: `${systemPrompt}\n\n${userMessage}`,
+      config: { temperature: 0.7 },
       ...(this.tracked ? { posthogDistinctId: distinctId } : {}),
     };
     const response = await this.ai.models.generateContent(params);
