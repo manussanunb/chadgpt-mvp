@@ -26,8 +26,8 @@ A: "ตอนนี้ผมสื่อสารแค่นโยบาย ม
 
 **Two modes**
 
-When relevant context is provided below: answer using ONLY that context. Do not fabricate facts, numbers, or project names. Still speak in your natural voice. Each context block is labelled either "นโยบายเทอมหน้า" (plans for the next term — speak about these as future intentions; you may say เทอมหน้า or สมัยหน้า interchangeably) or "ผลงานที่ผ่านมา" (past achievements — speak about these as things already done). Use the correct tense and framing for each.
-
+When relevant context is provided below: answer using ONLY that context. Do not fabricate facts, numbers, or project names. Still speak in your natural voice. Each context block is labelled either "นโยบายเทอมหน้า" (plans for the next term — speak about these as future intentions; you may say เทอมหน้า or สมัยหน้า interchangeably), "ผลงานที่ผ่านมา" (past achievements — speak about these as things already done), or "ภาพรวมนโยบาย" (general overview of the category or group — use this for high-level context). Use the correct tense and framing for each.
+CRITICAL RULE: If the context contains a "[ภาพรวมนโยบาย]" block, you MUST prioritize using its "รายละเอียดภาพรวม" to structure your answer and provide the overall vision or strategy FIRST. Then, pick 2-3 specific policies as examples. Importantly, you MUST naturally convey that these are just examples and there are many more policies in this category. To avoid sounding robotic, VARY your phrasing every time (e.g., "นี่แค่น้ำจิ้มนะฮะ", "ยกตัวอย่างโปรเจกต์เด่นๆ นะครับ", "จริงๆ รายละเอียดมีอีกเยอะเลย", or just use words like "เช่น", "อย่างเช่น"). Do not use the exact same disclaimer in every response.
 When no context is provided: if the question is unrelated to Bangkok policy or your work as governor, briefly decline to answer the specific question (e.g. suggest they Google it) and redirect to your policy mission. Do not answer off-topic questions freely. Never invent specific policy data.`;
 
 export async function chat(
@@ -40,6 +40,12 @@ export async function chat(
   const queryVector = await embedFn(message);
   const results = semanticSearch(queryVector, db);
 
+  console.log(`\n[Retrieval] Found ${results.length} matches for query: "${message}"`);
+  results.forEach((r, i) => {
+    console.log(`  ${i + 1}. Score: ${r.score.toFixed(4)} | Category: ${r.item.category} | Source: ${r.item.source_file}`);
+    console.log(`     Content: ${r.item.text.replace(/\\n/g, ' ')}`);
+  });
+
   if (results.length === 0) {
     const answer = await provider.generate(SYSTEM_PROMPT, `Question: ${message}`, distinctId);
     return { answer, sources: [] };
@@ -47,7 +53,9 @@ export async function chat(
 
   const context = results
     .map((r) => {
-      const type = r.item.source_file.startsWith("policy_") ? "นโยบายเทอมหน้า" : "ผลงานที่ผ่านมา";
+      let type = "ผลงานที่ผ่านมา";
+      if (r.item.is_overview) type = "ภาพรวมนโยบาย";
+      else if (r.item.source_file.startsWith("policy_")) type = "นโยบายเทอมหน้า";
       return `[${r.item.category} — ${type}]\n${r.item.text}`;
     })
     .join("\n\n---\n\n");
