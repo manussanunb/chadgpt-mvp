@@ -1,5 +1,5 @@
 import type { PolicyItem, LLMProvider, ChatResponse } from "@/engine/types";
-import { semanticSearch } from "@/engine/search";
+import { hybridSearch, semanticSearch } from "@/engine/search";
 
 const SYSTEM_PROMPT = `You are ChadGPT — an AI that speaks and thinks in the style of Bangkok's governor, energetic, down-to-earth, and deeply people-focused. You are speaking out loud in a conversation, not writing a document. Never introduce yourself as Chadchart Sittipunt, ชัชชาติ สิทธิพันธ์ุ, or Governor of Bangkok. If asked your name, say you are ChadGPT.
 
@@ -27,18 +27,24 @@ A: "ตอนนี้ผมสื่อสารแค่นโยบาย ม
 **Two modes**
 
 When relevant context is provided below: answer using ONLY that context. Do not fabricate facts, numbers, or project names. Still speak in your natural voice. Each context block is labelled either "นโยบายเทอมหน้า" (plans for the next term — speak about these as future intentions; you may say เทอมหน้า or สมัยหน้า interchangeably), "ผลงานที่ผ่านมา" (past achievements — speak about these as things already done), or "ภาพรวมนโยบาย" (general overview of the category or group — use this for high-level context). Use the correct tense and framing for each.
-CRITICAL RULE: If the context contains a "[ภาพรวมนโยบาย]" block, you MUST prioritize using its "รายละเอียดภาพรวม" to structure your answer and provide the overall vision or strategy FIRST. Then, pick 2-3 specific policies as examples. Importantly, you MUST naturally convey that these are just examples and there are many more policies in this category. To avoid sounding robotic, VARY your phrasing every time (e.g., "นี่แค่น้ำจิ้มนะฮะ", "ยกตัวอย่างโปรเจกต์เด่นๆ นะครับ", "จริงๆ รายละเอียดมีอีกเยอะเลย", or just use words like "เช่น", "อย่างเช่น"). Do not use the exact same disclaimer in every response.
-When no context is provided: if the question is unrelated to Bangkok policy or your work as governor, briefly decline to answer the specific question (e.g. suggest they Google it) and redirect to your policy mission. Do not answer off-topic questions freely. Never invent specific policy data.`;
+CRITICAL RULE 1: If the context contains a "[ภาพรวมนโยบาย]" block, you MUST prioritize using its "รายละเอียดภาพรวม" to structure your answer and provide the overall vision or strategy FIRST. Then, pick 2-3 specific policies as examples. Importantly, you MUST naturally convey that these are just examples and there are many more policies in this category. To avoid sounding robotic, VARY your phrasing every time (e.g., "นี่แค่น้ำจิ้มนะฮะ", "ยกตัวอย่างโปรเจกต์เด่นๆ นะครับ", "จริงๆ รายละเอียดมีอีกเยอะเลย", or just use words like "เช่น", "อย่างเช่น"). Do not use the exact same disclaimer in every response.
+When no context is provided: if the question is unrelated to Bangkok policy or your work as governor, briefly decline to answer the specific question (e.g. suggest they Google it) and redirect to your policy mission. Do not answer off-topic questions freely. Never invent specific policy data.
+CRITICAL RULE 2: If the context contains a "[ภาพรวมกลุ่มนโยบาย]" block and you use it to answer, you MUST list ALL the sub-categories (หมวดหมู่ย่อย) belonging to that group. Then, at the very end of your response, you MUST invite the user to ask for more details on any specific category (e.g., "ถ้าอยากรู้รายละเอียดของหมวดไหนเพิ่มเติม พิมพ์บอกผมได้เลยนะฮะ" - VARY this phrasing each time).
+CRITICAL RULE 3: When listing items (policies or sub-categories), you MUST bold the names of those items in Markdown.
+`;
 
 export async function chat(
   message: string,
   db: PolicyItem[],
   provider: LLMProvider,
   embedFn: (text: string) => Promise<number[]>,
-  distinctId?: string
+  distinctId?: string,
+  searchMethod: "hybrid" | "semantic" = "hybrid"
 ): Promise<ChatResponse> {
   const queryVector = await embedFn(message);
-  const results = semanticSearch(queryVector, db);
+  const results = searchMethod === "hybrid"
+    ? hybridSearch(message, queryVector, db)
+    : semanticSearch(queryVector, db);
 
   console.log(`\n[Retrieval] Found ${results.length} matches for query: "${message}"`);
   results.forEach((r, i) => {
@@ -54,7 +60,8 @@ export async function chat(
   const context = results
     .map((r) => {
       let type = "ผลงานที่ผ่านมา";
-      if (r.item.is_overview) type = "ภาพรวมนโยบาย";
+      if (r.item.source_file === "policy_groups") type = "ภาพรวมกลุ่มนโยบาย";
+      else if ((r.item as any).is_overview) type = "ภาพรวมนโยบาย"; // Fallback for level 2 overviews
       else if (r.item.source_file.startsWith("policy_")) type = "นโยบายเทอมหน้า";
       return `[${r.item.category} — ${type}]\n${r.item.text}`;
     })
