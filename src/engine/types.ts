@@ -5,6 +5,7 @@ export interface PolicyItem {
   source_url: string;
   source_file: string;
   embedding: number[];
+  is_overview?: boolean;
 }
 
 export interface SearchResult {
