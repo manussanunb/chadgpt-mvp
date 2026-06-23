@@ -7,8 +7,8 @@ import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { ChatWindow } from "@/components/ChatWindow";
 import { ChatInput } from "@/components/ChatInput";
 import type { ChatResponse } from "@/engine/types";
-import logoSrc from "../public/teamchadchart_logo.png";
 import avatarSrc from "../public/chadgpt_profile_picture.jpeg";
+import awareHouseSrc from "../public/awarehouse_logo.jpg";
 
 interface Message {
   role: "user" | "assistant";
@@ -91,7 +91,7 @@ export default function Home() {
           <p className="text-sm font-semibold text-white leading-tight">ChadGPT</p>
           <p className="text-xs text-white/50 leading-tight truncate">นโยบายและผลงานของทีมชัชชาติ</p>
         </div>
-        <Image src={logoSrc} alt="TeamChadchart" className="h-6 w-auto opacity-70 flex-shrink-0" />
+        <Image src={awareHouseSrc} alt="BKK AwareHouse" className="h-9 w-9 rounded-md object-cover flex-shrink-0 ring-2 ring-white/60" />
       </header>
 
       <ChatWindow
