@@ -74,9 +74,9 @@ export function ChatWindow({ messages, isLoading, onStarterClick }: ChatWindowPr
         <div className="flex justify-start mb-3">
           <div className="bg-[#f8fffe] border-l-[3px] border-l-[#013920] border border-[#013920]/10 rounded-2xl rounded-bl-sm px-5 py-3.5 shadow-sm">
             <span className="flex gap-1.5 items-center">
-              <span className="w-2 h-2 bg-[#86f101] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-2 h-2 bg-[#86f101] rounded-full animate-bounce" style={{ animationDelay: "160ms" }} />
-              <span className="w-2 h-2 bg-[#86f101] rounded-full animate-bounce" style={{ animationDelay: "320ms" }} />
+              <span className="w-2 h-2 bg-[#013920] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-2 h-2 bg-[#013920] rounded-full animate-bounce" style={{ animationDelay: "160ms" }} />
+              <span className="w-2 h-2 bg-[#013920] rounded-full animate-bounce" style={{ animationDelay: "320ms" }} />
             </span>
           </div>
         </div>
