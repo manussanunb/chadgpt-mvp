@@ -69,6 +69,34 @@ frame-ancestors 'none'
 
 ---
 
+## Cloudflare WAF Configuration
+
+**Date configured:** 2026-06-23
+
+### Block Suspicious Bots (Custom Rule)
+- **Action:** Managed Challenge
+- **Expression:** `(cf.client.bot) and not (cf.verified_bot_category in {"Search Engine Crawlers"})`
+- **Note:** `cf.bot_score` is not available on the free plan; this rule uses `cf.client.bot` instead
+
+### Challenge Non-Browser Traffic on Chat Endpoint (Custom Rule)
+- **Action:** Managed Challenge
+- **Expression:** `(http.request.uri.path eq "/api/chat" and cf.client.bot)`
+- **Target:** `/api/chat` exactly (confirmed from `app/api/chat/route.ts` — no trailing slash)
+
+### Bot Fight Mode
+- **Setting:** Enabled (Security → Bots → Bot Fight Mode)
+- **Effect:** Cloudflare automatically challenges known bots before requests reach the origin
+
+### Rate Limiting Rule
+- **Path:** `/api/*`
+- **Limit:** 5 requests per 10 seconds per IP
+- **Mitigation timeout:** 10 seconds
+- **Action:** Block
+- **Characteristics:** `ip.src`
+- **Configured via:** Cloudflare Ruleset API (`http_ratelimit` phase entrypoint)
+
+---
+
 ## What Was Already in Place
 
 | Control | Notes |
@@ -123,6 +151,9 @@ Infrastructure
 [✓] CORS not explicitly widened (Vercel default: * on static; API has no CORS headers)
 [✓] No critical npm vulnerabilities
 [✓] Error responses safe
+[✓] Cloudflare WAF: suspicious bot challenge rule active
+[✓] Cloudflare Bot Fight Mode enabled
+[✓] Cloudflare WAF: rate limit 5 req/10s per IP on /api/*
 
 Supply Chain
 [✓] package-lock.json committed
