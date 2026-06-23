@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import posthog from "posthog-js";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 
 interface Source {
   category: string;
@@ -13,6 +14,67 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: Source[];
+  citationSources?: Record<string, { category: string; source_url: string }>;
+}
+
+function applyInlineCitations(
+  raw: string,
+  citationSources: Record<string, { category: string; source_url: string }> | undefined
+): string {
+  if (!citationSources) return raw;
+  return raw.replace(/\[cite:(\d+)\]([\s\S]*?)\[\/cite\]/g, (_, id, text) => {
+    const safe = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return `<u data-cite="${id}">${safe}</u>`;
+  });
+}
+
+function CitationSpan({
+  children,
+  source,
+}: {
+  children: React.ReactNode;
+  source: { category: string; source_url: string };
+}) {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function scheduleClose() {
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  }
+
+  function cancelClose() {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }
+
+  return (
+    <span className="relative inline">
+      <span
+        className="underline decoration-dotted decoration-[#013920] underline-offset-2 cursor-help text-[#013920]/80"
+        onMouseEnter={() => { cancelClose(); setOpen(true); }}
+        onMouseLeave={scheduleClose}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {children}
+      </span>
+      {open && (
+        <span
+          className="absolute bottom-full left-0 mb-1 z-10 w-max max-w-[220px] rounded-lg bg-[#013920] text-white text-xs px-3 py-2 shadow-lg flex flex-col gap-1 pointer-events-auto"
+          onMouseEnter={cancelClose}
+          onMouseLeave={scheduleClose}
+        >
+          <span className="font-medium">{source.category}</span>
+          <a
+            href={source.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline opacity-80 hover:opacity-100"
+          >
+            อ่านเพิ่มเติม →
+          </a>
+        </span>
+      )}
+    </span>
+  );
 }
 
 export function MessageBubble({ message }: { message: Message }) {
@@ -39,6 +101,7 @@ export function MessageBubble({ message }: { message: Message }) {
             message.content
           ) : (
             <ReactMarkdown
+              rehypePlugins={[rehypeRaw]}
               components={{
                 p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
                 ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
@@ -53,9 +116,15 @@ export function MessageBubble({ message }: { message: Message }) {
                     </a>
                   );
                 },
+                u: ({ children, ...props }) => {
+                  const citeId = (props as Record<string, unknown>)["data-cite"] as string | undefined;
+                  const source = citeId ? message.citationSources?.[citeId] : undefined;
+                  if (!source) return <u>{children}</u>;
+                  return <CitationSpan source={source}>{children}</CitationSpan>;
+                },
               }}
             >
-              {message.content}
+              {applyInlineCitations(message.content, message.citationSources)}
             </ReactMarkdown>
           )}
         </div>

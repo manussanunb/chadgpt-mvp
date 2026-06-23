@@ -66,7 +66,7 @@ describe("chat orchestrator", () => {
     expect(new Set(urls).size).toBe(urls.length);
   });
 
-  it("includes source_url in context block header passed to provider", async () => {
+  it("prefixes context blocks with 1-based numeric IDs", async () => {
     const generateMock = vi.fn().mockResolvedValue("ตอบ");
     const provider: LLMProvider = { generate: generateMock };
     const embedFn = vi.fn().mockResolvedValue([1, 0, 0]);
@@ -74,28 +74,42 @@ describe("chat orchestrator", () => {
     await chat("สุขภาพ", db, provider, embedFn);
 
     const userMessage: string = generateMock.mock.calls[0][1];
-    expect(userMessage).toContain("url: https://example.com/1");
+    expect(userMessage).toContain("[1] [");
   });
 
-  it("appends linking instruction to userMessage when results are found", async () => {
-    const generateMock = vi.fn().mockResolvedValue("ตอบ");
-    const provider: LLMProvider = { generate: generateMock };
+  it("returns populated citationSources when results are found", async () => {
+    const provider: LLMProvider = { generate: vi.fn().mockResolvedValue("ตอบ") };
     const embedFn = vi.fn().mockResolvedValue([1, 0, 0]);
 
-    await chat("สุขภาพ", db, provider, embedFn);
+    const result = await chat("สุขภาพ", db, provider, embedFn);
 
-    const userMessage: string = generateMock.mock.calls[0][1];
-    expect(userMessage).toContain("markdown link");
+    expect(result.citationSources).toBeDefined();
+    expect(result.citationSources!["1"]).toEqual({
+      category: "สุขภาพ",
+      source_url: "https://example.com/1",
+    });
   });
 
-  it("does not include linking instruction when no results match", async () => {
-    const generateMock = vi.fn().mockResolvedValue("ตอบ");
-    const provider: LLMProvider = { generate: generateMock };
+  it("citationSources is undefined when no results match", async () => {
+    const provider: LLMProvider = { generate: vi.fn().mockResolvedValue("ตอบ") };
     const embedFn = vi.fn().mockResolvedValue([0, 0, 0]);
 
-    await chat("ไม่เกี่ยวข้อง", db, provider, embedFn);
+    const result = await chat("ไม่เกี่ยวข้อง", db, provider, embedFn);
 
-    const userMessage: string = generateMock.mock.calls[0][1];
-    expect(userMessage).not.toContain("markdown link");
+    expect(result.citationSources).toBeUndefined();
+  });
+
+  it("citationSources keys match result order", async () => {
+    const multiDb: PolicyItem[] = [
+      makeItem([0.9, 0, 0], "สุขภาพ", "https://example.com/1"),
+      makeItem([0.8, 0, 0], "การขนส่ง", "https://example.com/2"),
+    ];
+    const provider: LLMProvider = { generate: vi.fn().mockResolvedValue("ตอบ") };
+    const embedFn = vi.fn().mockResolvedValue([1, 0, 0]);
+
+    const result = await chat("สุขภาพ", multiDb, provider, embedFn);
+
+    expect(result.citationSources!["1"].category).toBe("สุขภาพ");
+    expect(result.citationSources!["2"].category).toBe("การขนส่ง");
   });
 });

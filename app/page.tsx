@@ -7,13 +7,14 @@ import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { ChatWindow } from "@/components/ChatWindow";
 import { ChatInput } from "@/components/ChatInput";
 import type { ChatResponse } from "@/engine/types";
-import avatarSrc from "../public/chadgpt_profile_picture.jpeg";
+import avatarSrc from "../public/chadgpt_profile_picture.jpg";
 import awareHouseSrc from "../public/awarehouse_logo.jpg";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: { category: string; source_url: string }[];
+  citationSources?: Record<string, { category: string; source_url: string }>;
 }
 
 const SITE_KEY =
@@ -66,7 +67,7 @@ export default function Home() {
       });
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.answer, sources: data.sources },
+        { role: "assistant", content: data.answer, sources: data.sources, citationSources: data.citationSources },
       ]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่";
