@@ -110,7 +110,7 @@ async function main() {
     const raw = JSON.parse(readFileSync(source.path, "utf-8")) as Record<string, unknown>[];
     console.log(`\nProcessing ${source.name} (${raw.length} items)...`);
 
-  //   const output = [];
+    const output = [];
     
     if (source.type === "policy") {
       const categoryMap = new Map<string, { description: string; url: string; subcategories: Map<string, string[]> }>();
