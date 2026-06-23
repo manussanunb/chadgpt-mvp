@@ -91,10 +91,10 @@ export function MessageBubble({ message }: { message: Message }) {
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-3`}>
       <div className={`max-w-[80%] ${isUser ? "items-end" : "items-start"} flex flex-col gap-1`}>
         <div
-          className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+          className={`px-5 py-3.5 rounded-2xl text-sm leading-relaxed ${
             isUser
-              ? "bg-[#013920] text-white rounded-br-sm whitespace-pre-wrap"
-              : "bg-white border-l-[3px] border-l-[#013920] border border-[#013920]/10 text-gray-800 rounded-bl-sm shadow-sm prose prose-sm max-w-none"
+              ? "bg-gradient-to-br from-[#013920] to-[#024f2d] text-white rounded-br-sm whitespace-pre-wrap shadow-md"
+              : "bg-[#f8fffe] border-l-[3px] border-l-[#013920] border border-[#013920]/10 text-gray-800 rounded-bl-sm shadow-sm prose prose-sm max-w-none"
           }`}
         >
           {isUser ? (
@@ -134,7 +134,7 @@ export function MessageBubble({ message }: { message: Message }) {
             <button
               onClick={() => handleRating("good")}
               disabled={!!rating}
-              className={`text-base transition-opacity ${rating === "good" ? "opacity-100" : rating ? "opacity-20" : "opacity-40 hover:opacity-80"}`}
+              className={`min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-base transition-all duration-150 ${rating === "good" ? "opacity-100 bg-[#86f101]/20" : rating ? "opacity-20" : "opacity-40 hover:opacity-90 hover:bg-gray-100"}`}
               aria-label="ตอบดี"
             >
               👍
@@ -142,7 +142,7 @@ export function MessageBubble({ message }: { message: Message }) {
             <button
               onClick={() => handleRating("bad")}
               disabled={!!rating}
-              className={`text-base transition-opacity ${rating === "bad" ? "opacity-100" : rating ? "opacity-20" : "opacity-40 hover:opacity-80"}`}
+              className={`min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-base transition-all duration-150 ${rating === "bad" ? "opacity-100 bg-red-50" : rating ? "opacity-20" : "opacity-40 hover:opacity-90 hover:bg-gray-100"}`}
               aria-label="ตอบไม่ดี"
             >
               👎
@@ -150,7 +150,7 @@ export function MessageBubble({ message }: { message: Message }) {
             <button
               onClick={() => handleRating("funny")}
               disabled={!!rating}
-              className={`text-base transition-opacity ${rating === "funny" ? "opacity-100" : rating ? "opacity-20" : "opacity-40 hover:opacity-80"}`}
+              className={`min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-base transition-all duration-150 ${rating === "funny" ? "opacity-100 bg-yellow-50" : rating ? "opacity-20" : "opacity-40 hover:opacity-90 hover:bg-gray-100"}`}
               aria-label="ฮามาก"
             >
               😂
@@ -174,7 +174,7 @@ export function MessageBubble({ message }: { message: Message }) {
                       source_url: s.source_url,
                     })
                   }
-                  className="text-xs text-[#013920] hover:underline bg-[#86f101]/20 border border-[#86f101]/60 px-2 py-0.5 rounded-full"
+                  className="text-xs font-medium text-[#013920] hover:underline bg-[#86f101]/20 hover:bg-[#86f101]/35 border border-[#86f101]/60 px-2.5 py-1 rounded-full transition-colors duration-150"
                 >
                   {s.category} ↗
                 </a>

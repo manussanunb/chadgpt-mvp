@@ -85,14 +85,14 @@ export default function Home() {
   }
 
   return (
-    <main className="flex flex-col h-screen bg-[#ffffff] max-w-2xl mx-auto md:border-x md:border-[#013920]">
-      <header className="flex items-center gap-3 px-4 py-3 bg-[#013920]">
-        <Image src={avatarSrc} alt="ChadGPT" className="w-9 h-9 rounded-full object-cover ring-2 ring-[#86f101]/40" />
+    <main className="flex flex-col h-screen bg-[#ffffff] max-w-3xl lg:max-w-none mx-auto md:border-x lg:border-x-0 md:border-[#013920]">
+      <header className="flex items-center gap-3 px-4 py-4 bg-[#013920] shadow-lg border-b-2 border-[#86f101]/30">
+        <Image src={avatarSrc} alt="ChadGPT" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover ring-2 ring-[#86f101]/50 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-white leading-tight">ChadGPT</p>
-          <p className="text-xs text-white/50 leading-tight truncate">นโยบายและผลงานของทีมชัชชาติ</p>
+          <p className="text-sm font-bold text-white leading-tight">ChadGPT</p>
+          <p className="text-xs text-white/70 leading-tight truncate">นโยบายและผลงานของทีมชัชชาติ</p>
         </div>
-        <Image src={awareHouseSrc} alt="BKK AwareHouse" className="h-9 w-9 rounded-md object-cover flex-shrink-0 ring-2 ring-white/60" />
+        <Image src={awareHouseSrc} alt="BKK AwareHouse" className="h-10 w-10 md:h-12 md:w-12 rounded-md object-cover flex-shrink-0 ring-2 ring-white/50" />
       </header>
 
       <ChatWindow
