@@ -78,7 +78,7 @@ async function main() {
     try {
       const response = await ai.models.embedContent({
         model: "gemini-embedding-001",
-        contents: contextText,
+        contents:  `นโยบาย${cg.group}`,
       });
 
       const embedding = response.embeddings?.[0]?.values;
@@ -105,13 +105,13 @@ async function main() {
     console.log(`  → Saved ${groupsOutput.length} items to ${outPath}`);
     totalEmbedded += groupsOutput.length;
   }
-
+  const categoryOutput = [];
   for (const source of SOURCE_FILES) {
     const raw = JSON.parse(readFileSync(source.path, "utf-8")) as Record<string, unknown>[];
     console.log(`\nProcessing ${source.name} (${raw.length} items)...`);
 
-    const output = [];
-
+  //   const output = [];
+    
     if (source.type === "policy") {
       const categoryMap = new Map<string, { description: string; url: string; subcategories: Map<string, string[]> }>();
       for (const item of raw) {
@@ -145,13 +145,12 @@ async function main() {
           subcatsOnlyText += `- ${subcat}\n`;
         }
         
-        const contextText = `หมวดหมู่: ${cat}\nรายละเอียดภาพรวม: ${data.description}\n\nรายชื่อนโยบายแบ่งตามหมวดย่อย:\n${groupedPoliciesText.trim()}`;
-        const embedText = `หมวดหมู่: ${cat}\nรายละเอียดภาพรวม: ${data.description}\nหมวดย่อยที่มีในหมวดหมู่นี้:\n${subcatsOnlyText.trim()}`;
+        const contextText = `หมวดหมู่: ${cat}\nรายละเอียดภาพรวม: ${data.description}\nหมวดย่อยที่มีในหมวดหมู่นี้:\n${subcatsOnlyText.trim()}`;
 
         try {
           const response = await ai.models.embedContent({
             model: "gemini-embedding-001",
-            contents: embedText,
+            contents: contextText,
           });
 
           const embedding = response.embeddings?.[0]?.values;
@@ -160,7 +159,7 @@ async function main() {
             continue;
           }
 
-          output.push({
+          categoryOutput.push({
             category: cat,
             source_url: data.url,
             text: contextText,
@@ -208,6 +207,7 @@ async function main() {
 
       if (i < raw.length - 1) await sleep(DELAY_MS);
     }
+    
 
     const outPath = join(OUT_DIR, `${source.name}.json`);
     writeFileSync(outPath, JSON.stringify(output, null, 2));
@@ -215,6 +215,10 @@ async function main() {
     totalEmbedded += output.length;
   }
 
+  const categoryOutPath = join(OUT_DIR, `category.json`);
+  writeFileSync(categoryOutPath, JSON.stringify(categoryOutput, null, 2));
+  console.log(`  → Saved ${categoryOutput.length} items to ${categoryOutPath}`);
+  totalEmbedded += categoryOutput.length;
   console.log(`\nDone. Total items embedded: ${totalEmbedded}`);
 }
 
