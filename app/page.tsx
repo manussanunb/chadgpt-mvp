@@ -77,41 +77,39 @@ export default function Home() {
         content: data.answer,
         sources: data.sources,
         citationSources: data.citationSources,
-        followUpQuestions: data.sources.length > 0 ? null : undefined,
+        followUpQuestions: null,
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // Fire follow-up question generation only when RAG context was used
-      if (data.sources.length > 0) {
-        const ac = new AbortController();
-        followUpAbortRef.current = ac;
+      // Fire follow-up question generation for every successful response
+      const ac = new AbortController();
+      followUpAbortRef.current = ac;
 
-        const timeoutId = setTimeout(() => ac.abort(), 5000);
+      const timeoutId = setTimeout(() => ac.abort(), 5000);
 
-        fetch("/api/follow-up", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: trimmed, answer: data.answer }),
-          signal: ac.signal,
-        })
-          .then((r) => r.json())
-          .then(({ followUpQuestions }: FollowUpResponse) => {
-            clearTimeout(timeoutId);
-            setMessages((prev) => {
-              const last = prev[prev.length - 1];
-              if (!last || last.role !== "assistant") return prev;
-              return [...prev.slice(0, -1), { ...last, followUpQuestions }];
-            });
-          })
-          .catch(() => {
-            clearTimeout(timeoutId);
-            setMessages((prev) => {
-              const last = prev[prev.length - 1];
-              if (!last || last.role !== "assistant") return prev;
-              return [...prev.slice(0, -1), { ...last, followUpQuestions: [] }];
-            });
+      fetch("/api/follow-up", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: trimmed, answer: data.answer, ragContext: data.ragContext }),
+        signal: ac.signal,
+      })
+        .then((r) => r.json())
+        .then(({ followUpQuestions }: FollowUpResponse) => {
+          clearTimeout(timeoutId);
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (!last || last.role !== "assistant") return prev;
+            return [...prev.slice(0, -1), { ...last, followUpQuestions }];
           });
-      }
+        })
+        .catch(() => {
+          clearTimeout(timeoutId);
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (!last || last.role !== "assistant") return prev;
+            return [...prev.slice(0, -1), { ...last, followUpQuestions: [] }];
+          });
+        });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่";
       posthog.capture("chat_error", { error_message: errorMessage });

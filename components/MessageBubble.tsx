@@ -167,9 +167,9 @@ export function MessageBubble({ message, isLatest, isLoading, onFollowUpSelect }
           </div>
         )}
 
-        {!isUser && isLatest && (
+        {!isUser && isLatest && message.followUpQuestions !== undefined && (
           <FollowUpChips
-            questions={message.followUpQuestions ?? null}
+            questions={message.followUpQuestions}
             onSelect={onFollowUpSelect ?? (() => {})}
             disabled={!!isLoading}
           />

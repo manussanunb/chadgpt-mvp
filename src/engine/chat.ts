@@ -68,5 +68,5 @@ export async function chat(
       return true;
     });
 
-  return { answer, sources, citationSources };
+  return { answer, sources, citationSources, ragContext: context };
 }
