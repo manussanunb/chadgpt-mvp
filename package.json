@@ -9,7 +9,7 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "typecheck": "tsc --noEmit",
-    "embed": "node --env-file=.env.local --import=tsx/esm scripts/embed.ts",
+    "embed": "node --env-file=.env.local --import=tsx scripts/embed.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
