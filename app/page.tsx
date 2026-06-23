@@ -6,7 +6,7 @@ import posthog from "posthog-js";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { ChatWindow } from "@/components/ChatWindow";
 import { ChatInput } from "@/components/ChatInput";
-import type { ChatResponse } from "@/engine/types";
+import type { ChatResponse, FollowUpResponse } from "@/engine/types";
 import avatarSrc from "../public/chadgpt_profile_picture.jpg";
 import awareHouseSrc from "../public/awarehouse_logo.jpg";
 
@@ -15,6 +15,7 @@ interface Message {
   content: string;
   sources?: { category: string; source_url: string }[];
   citationSources?: Record<string, { category: string; source_url: string }>;
+  followUpQuestions?: string[] | null;
 }
 
 const SITE_KEY =
@@ -26,12 +27,17 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
+  const followUpAbortRef = useRef<AbortController | null>(null);
 
   const turnstileReady = !SITE_KEY || !!turnstileToken;
 
   async function sendMessage(text: string, isStarterQuestion = false) {
     const trimmed = text.trim();
     if (!trimmed || isLoading || !turnstileReady) return;
+
+    // Cancel any in-flight follow-up request from a previous answer
+    followUpAbortRef.current?.abort();
+    followUpAbortRef.current = null;
 
     posthog.capture("message_sent", {
       message_length: trimmed.length,
@@ -65,10 +71,47 @@ export default function Home() {
         has_sources: data.sources.length > 0,
         source_count: data.sources.length,
       });
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.answer, sources: data.sources, citationSources: data.citationSources },
-      ]);
+
+      const assistantMsg: Message = {
+        role: "assistant",
+        content: data.answer,
+        sources: data.sources,
+        citationSources: data.citationSources,
+        followUpQuestions: data.sources.length > 0 ? null : undefined,
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+
+      // Fire follow-up question generation only when RAG context was used
+      if (data.sources.length > 0) {
+        const ac = new AbortController();
+        followUpAbortRef.current = ac;
+
+        const timeoutId = setTimeout(() => ac.abort(), 5000);
+
+        fetch("/api/follow-up", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: trimmed, answer: data.answer }),
+          signal: ac.signal,
+        })
+          .then((r) => r.json())
+          .then(({ followUpQuestions }: FollowUpResponse) => {
+            clearTimeout(timeoutId);
+            setMessages((prev) => {
+              const last = prev[prev.length - 1];
+              if (!last || last.role !== "assistant") return prev;
+              return [...prev.slice(0, -1), { ...last, followUpQuestions }];
+            });
+          })
+          .catch(() => {
+            clearTimeout(timeoutId);
+            setMessages((prev) => {
+              const last = prev[prev.length - 1];
+              if (!last || last.role !== "assistant") return prev;
+              return [...prev.slice(0, -1), { ...last, followUpQuestions: [] }];
+            });
+          });
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่";
       posthog.capture("chat_error", { error_message: errorMessage });
@@ -99,6 +142,7 @@ export default function Home() {
         messages={messages}
         isLoading={isLoading}
         onStarterClick={(q) => sendMessage(q, true)}
+        onFollowUpSelect={(q) => sendMessage(q, false)}
       />
 
       <ChatInput

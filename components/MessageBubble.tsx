@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import posthog from "posthog-js";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import { FollowUpChips } from "./FollowUpChips";
 
 interface Source {
   category: string;
@@ -15,6 +16,14 @@ interface Message {
   content: string;
   sources?: Source[];
   citationSources?: Record<string, { category: string; source_url: string }>;
+  followUpQuestions?: string[] | null;
+}
+
+interface MessageBubbleProps {
+  message: Message;
+  isLatest?: boolean;
+  isLoading?: boolean;
+  onFollowUpSelect?: (question: string) => void;
 }
 
 function applyInlineCitations(
@@ -77,7 +86,7 @@ function CitationSpan({
   );
 }
 
-export function MessageBubble({ message }: { message: Message }) {
+export function MessageBubble({ message, isLatest, isLoading, onFollowUpSelect }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const [rating, setRating] = useState<"good" | "bad" | "funny" | null>(null);
 
@@ -158,29 +167,12 @@ export function MessageBubble({ message }: { message: Message }) {
           </div>
         )}
 
-        {!isUser && message.sources && message.sources.length > 0 && (
-          <div className="flex flex-col gap-1 px-1">
-            <p className="text-xs text-gray-400">อ่านนโยบายเพิ่มเติมที่</p>
-            <div className="flex flex-wrap gap-1">
-              {message.sources.map((s, i) => (
-                <a
-                  key={i}
-                  href={s.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() =>
-                    posthog.capture("source_link_clicked", {
-                      category: s.category,
-                      source_url: s.source_url,
-                    })
-                  }
-                  className="text-xs font-medium text-[#013920] hover:underline bg-[#86f101]/20 hover:bg-[#86f101]/35 border border-[#86f101]/60 px-2.5 py-1 rounded-full transition-colors duration-150"
-                >
-                  {s.category} ↗
-                </a>
-              ))}
-            </div>
-          </div>
+        {!isUser && isLatest && (
+          <FollowUpChips
+            questions={message.followUpQuestions ?? null}
+            onSelect={onFollowUpSelect ?? (() => {})}
+            disabled={!!isLoading}
+          />
         )}
       </div>
     </div>

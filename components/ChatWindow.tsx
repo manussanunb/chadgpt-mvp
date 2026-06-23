@@ -14,6 +14,7 @@ interface Message {
   content: string;
   sources?: Source[];
   citationSources?: Record<string, { category: string; source_url: string }>;
+  followUpQuestions?: string[] | null;
 }
 
 const STARTER_QUESTIONS = [
@@ -28,14 +29,20 @@ interface ChatWindowProps {
   messages: Message[];
   isLoading: boolean;
   onStarterClick: (question: string) => void;
+  onFollowUpSelect: (question: string) => void;
 }
 
-export function ChatWindow({ messages, isLoading, onStarterClick }: ChatWindowProps) {
+export function ChatWindow({ messages, isLoading, onStarterClick, onFollowUpSelect }: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
+
+  const lastAssistantIdx = messages.reduce(
+    (last, msg, i) => (msg.role === "assistant" ? i : last),
+    -1
+  );
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-4 lg:px-0">
@@ -68,7 +75,13 @@ export function ChatWindow({ messages, isLoading, onStarterClick }: ChatWindowPr
       )}
 
       {messages.map((msg, i) => (
-        <MessageBubble key={i} message={msg} />
+        <MessageBubble
+          key={i}
+          message={msg}
+          isLatest={i === lastAssistantIdx}
+          isLoading={isLoading}
+          onFollowUpSelect={onFollowUpSelect}
+        />
       ))}
 
       {isLoading && (

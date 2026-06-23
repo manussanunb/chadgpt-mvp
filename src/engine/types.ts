@@ -26,3 +26,12 @@ export interface ChatResponse {
   sources: { category: string; source_url: string }[];
   citationSources?: Record<string, { category: string; source_url: string }>;
 }
+
+export interface FollowUpRequest {
+  question: string;
+  answer: string;
+}
+
+export interface FollowUpResponse {
+  followUpQuestions: string[];
+}
