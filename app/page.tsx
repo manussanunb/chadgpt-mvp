@@ -7,7 +7,7 @@ import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { ChatWindow } from "@/components/ChatWindow";
 import { ChatInput } from "@/components/ChatInput";
 import type { ChatResponse } from "@/engine/types";
-import avatarSrc from "../public/chadgpt_profile_picture.jpeg";
+import avatarSrc from "../public/chadgpt_profile_picture.jpg";
 import awareHouseSrc from "../public/awarehouse_logo.jpg";
 
 interface Message {
