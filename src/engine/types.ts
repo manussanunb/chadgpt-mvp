@@ -25,4 +25,15 @@ export interface ChatResponse {
   answer: string;
   sources: { category: string; source_url: string }[];
   citationSources?: Record<string, { category: string; source_url: string }>;
+  ragContext?: string;
+}
+
+export interface FollowUpRequest {
+  question: string;
+  answer: string;
+  ragContext?: string;
+}
+
+export interface FollowUpResponse {
+  followUpQuestions: string[];
 }
