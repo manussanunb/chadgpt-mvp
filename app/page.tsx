@@ -14,6 +14,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: { category: string; source_url: string }[];
+  citationSources?: Record<string, { category: string; source_url: string }>;
 }
 
 const SITE_KEY =
@@ -66,7 +67,7 @@ export default function Home() {
       });
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.answer, sources: data.sources },
+        { role: "assistant", content: data.answer, sources: data.sources, citationSources: data.citationSources },
       ]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่";

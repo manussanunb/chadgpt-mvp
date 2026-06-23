@@ -24,4 +24,5 @@ export interface ChatRequest {
 export interface ChatResponse {
   answer: string;
   sources: { category: string; source_url: string }[];
+  citationSources?: Record<string, { category: string; source_url: string }>;
 }

@@ -13,6 +13,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: Source[];
+  citationSources?: Record<string, { category: string; source_url: string }>;
 }
 
 const STARTER_QUESTIONS = [
