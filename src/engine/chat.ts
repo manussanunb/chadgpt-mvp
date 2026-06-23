@@ -31,7 +31,9 @@ CRITICAL RULE 1: If the context contains a "[ภาพรวมนโยบา�
 When no context is provided: if the question is unrelated to Bangkok policy or your work as governor, briefly decline to answer the specific question (e.g. suggest they Google it) and redirect to your policy mission. Do not answer off-topic questions freely. Never invent specific policy data.
 CRITICAL RULE 2: If the context contains a "[ภาพรวมกลุ่มนโยบาย]" block and you use it to answer, you MUST list ALL the sub-categories (หมวดหมู่ย่อย) belonging to that group. Then, at the very end of your response, you MUST invite the user to ask for more details on any specific category (e.g., "ถ้าอยากรู้รายละเอียดของหมวดไหนเพิ่มเติม พิมพ์บอกผมได้เลยนะฮะ" - VARY this phrasing each time).
 CRITICAL RULE 3: When listing items (policies or sub-categories), you MUST bold the names of those items in Markdown.
-`;
+
+Use the correct tense and framing for each. When drawing from a context block, wrap the specific phrase or sentence with [cite:N] and [/cite] — where N is that block's number. Example: เราได้[cite:1]ติดตั้ง CCTV เพิ่ม 10,000 ตัว[/cite]ทั่วกรุงเทพ. Do not nest cite markers.
+When no context is provided: if the question is unrelated to Bangkok policy or your work as governor, briefly decline to answer the specific question (e.g. suggest they Google it) and redirect to your policy mission. Do not answer off-topic questions freely. Never invent specific policy data.`;
 
 export async function chat(
   message: string,
@@ -57,13 +59,19 @@ export async function chat(
     return { answer, sources: [] };
   }
 
+  const citationSources: Record<string, { category: string; source_url: string }> = {};
+
   const context = results
-    .map((r) => {
+    .map((r, i) => {
+      const id = i + 1;
+      citationSources[String(id)] = { category: r.item.category, source_url: r.item.source_url };
+
       let type = "ผลงานที่ผ่านมา";
       if (r.item.source_file === "policy_groups") type = "ภาพรวมกลุ่มนโยบาย";
       else if ((r.item as any).is_overview) type = "ภาพรวมนโยบาย"; // Fallback for level 2 overviews
       else if (r.item.source_file.startsWith("policy_")) type = "นโยบายเทอมหน้า";
-      return `[${r.item.category} — ${type}]\n${r.item.text}`;
+      
+      return `[${id}] [${r.item.category} — ${type}]\n${r.item.text}`;
     })
     .join("\n\n---\n\n");
 
@@ -79,5 +87,5 @@ export async function chat(
       return true;
     });
 
-  return { answer, sources };
+  return { answer, sources, citationSources, ragContext: context };
 }

@@ -15,7 +15,8 @@ const securityHeaders = [
       "img-src 'self' data: blob:",
       "font-src 'self'",
       "frame-src https://challenges.cloudflare.com",
-      "connect-src 'self' https://us.i.posthog.com https://us-assets.i.posthog.com",
+      "connect-src 'self' https://*.posthog.com",
+      "worker-src 'self' blob:",
       "frame-ancestors 'none'",
     ].join("; "),
   },
@@ -29,22 +30,6 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
-  },
-  async rewrites() {
-    return [
-      {
-        source: "/ingest/static/:path*",
-        destination: "https://us-assets.i.posthog.com/static/:path*",
-      },
-      {
-        source: "/ingest/array/:path*",
-        destination: "https://us-assets.i.posthog.com/array/:path*",
-      },
-      {
-        source: "/ingest/:path*",
-        destination: "https://us.i.posthog.com/:path*",
-      },
-    ];
   },
   skipTrailingSlashRedirect: true,
 };

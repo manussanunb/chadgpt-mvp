@@ -6,8 +6,10 @@ import type { LLMProvider } from "@/engine/types";
 export class GeminiProvider implements LLMProvider {
   private ai: PostHogGoogleGenAI | GoogleGenAI;
   private tracked: boolean;
+  private model: string;
 
-  constructor(apiKey: string, posthog?: PostHog) {
+  constructor(apiKey: string, posthog?: PostHog, model = "gemini-2.5-flash") {
+    this.model = model;
     if (posthog) {
       this.ai = new PostHogGoogleGenAI({ apiKey, posthog });
       this.tracked = true;
@@ -19,13 +21,27 @@ export class GeminiProvider implements LLMProvider {
 
   async generate(systemPrompt: string, userMessage: string, distinctId = "anonymous"): Promise<string> {
     const params = {
-      model: "gemini-2.5-flash",
+      model: this.model,
       contents: `${systemPrompt}\n\n${userMessage}`,
       config: { temperature: 0.7 },
       ...(this.tracked ? { posthogDistinctId: distinctId } : {}),
     };
-    const response = await this.ai.models.generateContent(params);
-    return response.text ?? "";
+
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const response = await this.ai.models.generateContent(params);
+        return response.text ?? "";
+      } catch (err) {
+        const status = (err as { status?: number }).status;
+        if (status === 503 && attempt < maxRetries - 1) {
+          await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw new Error("Unreachable");
   }
 }
 
