@@ -24,8 +24,22 @@ export class GeminiProvider implements LLMProvider {
       config: { temperature: 0.7 },
       ...(this.tracked ? { posthogDistinctId: distinctId } : {}),
     };
-    const response = await this.ai.models.generateContent(params);
-    return response.text ?? "";
+
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const response = await this.ai.models.generateContent(params);
+        return response.text ?? "";
+      } catch (err) {
+        const status = (err as { status?: number }).status;
+        if (status === 503 && attempt < maxRetries - 1) {
+          await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw new Error("Unreachable");
   }
 }
 
