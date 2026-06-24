@@ -33,5 +33,6 @@ export async function handleChat(req: ChatRequest): Promise<ChatResponse> {
   const db = loadDatabase();
   const provider = getProvider();
   const embedFn = getEmbedFn();
-  return chat(req.message, db, provider, embedFn, req.distinctId);
+  const searchMethod = (process.env.SEARCH_METHOD as "hybrid" | "semantic") || "semantic";
+  return chat(req.message, db, provider, embedFn, req.distinctId, searchMethod);
 }
