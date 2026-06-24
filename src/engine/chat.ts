@@ -42,7 +42,7 @@ export async function chat(
   provider: LLMProvider,
   embedFn: (text: string) => Promise<number[]>,
   distinctId?: string,
-  searchMethod: "hybrid" | "semantic" = "hybrid"
+  searchMethod: "hybrid" | "semantic" = "semantic"
 ): Promise<ChatResponse> {
   const queryVector = await embedFn(message);
   const results = searchMethod === "hybrid"
