@@ -73,15 +73,23 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(response);
   } catch (err) {
-    console.error("[chat] Error:", err);
+    const isQuotaExhausted = (err as { status?: number }).status === 429;
+    console.error(`[chat] ${isQuotaExhausted ? "All providers quota exceeded" : "Error"}:`, err);
     posthog.capture({
       distinctId,
       event: "chat_api_error",
       properties: {
         error: err instanceof Error ? err.message : String(err),
+        quota_exhausted: isQuotaExhausted,
         response_time_ms: Date.now() - start,
       },
     });
+    if (isQuotaExhausted) {
+      return NextResponse.json(
+        { error: "ขออภัยครับ ระบบมีผู้ใช้งานเยอะในขณะนี้ กรุณาลองใหม่ในอีกสักครู่" },
+        { status: 503 }
+      );
+    }
     return NextResponse.json(
       { error: "ขออภัยครับ เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง" },
       { status: 500 }
