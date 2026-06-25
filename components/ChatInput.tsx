@@ -48,6 +48,9 @@ export function ChatInput({ value, onChange, onSubmit, isLoading }: ChatInputPro
           )}
         </button>
       </div>
+      <p className="mt-2 text-center text-[11px] text-gray-400">
+        Disclaimer : คำตอบนี้สร้างขึ้นโดย AI ซึ่งอาจให้ข้อมูลที่ไม่ถูกต้องหรือไม่เหมาะสมได้ ไม่สามารถนำไปใช้อ้างอิงได้
+      </p>
       </div>
     </div>
   );
