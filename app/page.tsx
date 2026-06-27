@@ -127,6 +127,12 @@ export default function Home() {
 
   return (
     <main className="flex flex-col h-screen bg-[#ffffff] max-w-3xl lg:max-w-none mx-auto md:border-x lg:border-x-0 md:border-[#013920]">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="bg-[#013920] text-white rounded-2xl px-10 py-8 shadow-2xl text-center ring-2 ring-[#86f101]/40">
+          <p className="text-2xl font-bold leading-relaxed">ปิดระบบชั่วคราว</p>
+          <p className="text-2xl font-bold leading-relaxed">ระหว่างช่วงการเลือกตั้ง</p>
+        </div>
+      </div>
       <header className="flex items-center gap-3 px-4 py-4 bg-[#013920] shadow-lg border-b-2 border-[#86f101]/30">
         <Image src={avatarSrc} alt="ChadGPT" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover ring-2 ring-[#86f101]/50 flex-shrink-0" />
         <div className="flex-1 min-w-0">
